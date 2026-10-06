@@ -1,0 +1,9 @@
+.git
+.github
+.angular
+dist
+node_modules
+npm-debug.log
+.editorconfig
+.vscode
+.idea

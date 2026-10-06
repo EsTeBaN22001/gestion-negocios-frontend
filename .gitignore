@@ -1,38 +1,42 @@
-# Environment / secrets
-.env
-.env.*
-!.env.example
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
-# .NET
-**/bin/
-**/obj/
-*.user
-*.suo
-.vs/
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
 
-# Angular / Node
-**/node_modules/
-**/dist/
-**/.angular/
-.nx/
+# Node
+/node_modules
+npm-debug.log
+yarn-error.log
 
-# IDE
+# IDEs and editors
 .idea/
-.vscode/settings.json
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
 
-# OS
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+
+# Miscellaneous
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+
+# System files
 .DS_Store
 Thumbs.db
-
-# Logs
-*.log
-
-# Test / coverage
-coverage/
-TestResults/
-
-# Local Docker data
-mysql-data/
-
-# User uploads during development
-uploads/
