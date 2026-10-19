@@ -1,11 +1,37 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
   <div class="container">
-    <a class="navbar-brand d-flex align-items-center" routerLink="/">
-      <i class="bi bi-shop me-2 fs-4"></i>
+    <a class="navbar-brand d-flex align-items-center me-4" routerLink="/">
+      <i class="bi bi-shop me-2 fs-4 text-primary"></i>
       <span class="fw-bold">Gestión Negocios</span>
     </a>
 
-    <div class="d-flex align-items-center">
+    <!-- Enlaces de navegación principales para Administrador -->
+    <ul class="navbar-nav me-auto mb-2 mb-lg-0" *ngIf="authService.currentUser$ | async as user">
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+          <i class="bi bi-house me-1"></i> Inicio
+        </a>
+      </li>
+      <ng-container *ngIf="user.rol === 'Administrador'">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/sucursales" routerLinkActive="active">
+            <i class="bi bi-buildings me-1"></i> Sucursales
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/categorias" routerLinkActive="active">
+            <i class="bi bi-tags me-1"></i> Categorías
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/usuarios" routerLinkActive="active">
+            <i class="bi bi-people me-1"></i> Usuarios
+          </a>
+        </li>
+      </ng-container>
+    </ul>
+
+    <div class="d-flex align-items-center ms-auto">
       <!-- Usuario Autenticado -->
       <ng-container *ngIf="authService.currentUser$ | async as user; else anonTemplate">
         <div class="text-light me-3 d-flex align-items-center">

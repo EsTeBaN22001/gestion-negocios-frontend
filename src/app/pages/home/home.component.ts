@@ -106,7 +106,50 @@ import { AuthService } from '../../core/services/auth.service';
             </div>
           </div>
 
-          <!-- 2. Estado de Infraestructura (Fase 0) -->
+          <!-- 2. Módulos de Administración (Fase 3) -->
+          <div class="card mb-4 border-success shadow-sm" *ngIf="authService.hasRole('Administrador')">
+            <div class="card-header bg-success text-white">
+              <i class="bi bi-grid-fill me-2"></i>
+              <strong>Módulos de Gestión Base (Fase 3)</strong>
+            </div>
+            <div class="card-body">
+              <p class="text-muted small mb-3">Acceso rápido a los módulos CRUD con paginación y búsqueda server-side:</p>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <div class="card h-100 border text-center p-3 shadow-none">
+                    <i class="bi bi-buildings text-primary fs-1 mb-2"></i>
+                    <h5 class="fw-bold mb-1">Sucursales</h5>
+                    <p class="text-muted small mb-3">Gestión de puntos de venta y asignación física</p>
+                    <a routerLink="/sucursales" class="btn btn-outline-primary btn-sm mt-auto">
+                      <i class="bi bi-arrow-right-circle me-1"></i> Ir a Sucursales
+                    </a>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card h-100 border text-center p-3 shadow-none">
+                    <i class="bi bi-tags text-success fs-1 mb-2"></i>
+                    <h5 class="fw-bold mb-1">Categorías</h5>
+                    <p class="text-muted small mb-3">Organización y catálogo de familias de productos</p>
+                    <a routerLink="/categorias" class="btn btn-outline-success btn-sm mt-auto">
+                      <i class="bi bi-arrow-right-circle me-1"></i> Ir a Categorías
+                    </a>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card h-100 border text-center p-3 shadow-none">
+                    <i class="bi bi-people text-info fs-1 mb-2"></i>
+                    <h5 class="fw-bold mb-1">Usuarios</h5>
+                    <p class="text-muted small mb-3">Gestión de cuentas, credenciales y roles</p>
+                    <a routerLink="/usuarios" class="btn btn-outline-info btn-sm mt-auto">
+                      <i class="bi bi-arrow-right-circle me-1"></i> Ir a Usuarios
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Estado de Infraestructura (Fase 0) -->
           <div class="card mb-3">
             <div class="card-header d-flex justify-content-between align-items-center">
               <div>
