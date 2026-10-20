@@ -5,11 +5,21 @@
       <span class="fw-bold">Gestión Negocios</span>
     </a>
 
-    <!-- Enlaces de navegación principales para Administrador -->
+    <!-- Enlaces de navegación principales -->
     <ul class="navbar-nav me-auto mb-2 mb-lg-0" *ngIf="authService.currentUser$ | async as user">
       <li class="nav-item">
         <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
           <i class="bi bi-house me-1"></i> Inicio
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/productos" routerLinkActive="active">
+          <i class="bi bi-box-seam me-1"></i> Productos
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/stock" routerLinkActive="active">
+          <i class="bi bi-boxes me-1"></i> Stock
         </a>
       </li>
       <ng-container *ngIf="user.rol === 'Administrador'">

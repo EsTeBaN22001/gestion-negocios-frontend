@@ -4,6 +4,8 @@ import { LoginComponent } from './pages/login/login.component';
 import { SucursalesComponent } from './pages/sucursales/sucursales.component';
 import { CategoriasComponent } from './pages/categorias/categorias.component';
 import { UsuariosComponent } from './pages/usuarios/usuarios.component';
+import { ProductosComponent } from './pages/productos/productos.component';
+import { StockComponent } from './pages/stock/stock.component';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 
@@ -27,6 +29,16 @@ export const routes: Routes = [
     component: UsuariosComponent,
     canActivate: [authGuard, roleGuard],
     data: { role: 'Administrador' }
+  },
+  {
+    path: 'productos',
+    component: ProductosComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'stock',
+    component: StockComponent,
+    canActivate: [authGuard]
   },
   { path: '**', redirectTo: '' }
 ];

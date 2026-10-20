@@ -106,7 +106,40 @@ import { AuthService } from '../../core/services/auth.service';
             </div>
           </div>
 
-          <!-- 2. Módulos de Administración (Fase 3) -->
+          <!-- 2. Módulos de Catálogo y Stock (Fase 4) -->
+          <div class="card mb-4 border-info shadow-sm" *ngIf="authService.isAuthenticated()">
+            <div class="card-header bg-info text-dark">
+              <i class="bi bi-box-seam-fill me-2"></i>
+              <strong>Catálogo y Control de Stock (Fase 4)</strong>
+            </div>
+            <div class="card-body">
+              <p class="text-muted small mb-3">Consulta de artículos, precios e inventario físico por sucursal:</p>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="card h-100 border text-center p-3 shadow-none">
+                    <i class="bi bi-box-seam text-primary fs-1 mb-2"></i>
+                    <h5 class="fw-bold mb-1">Catálogo de Productos</h5>
+                    <p class="text-muted small mb-3">Artículos registrados, categorías, precios y stock global</p>
+                    <a routerLink="/productos" class="btn btn-outline-primary btn-sm mt-auto">
+                      <i class="bi bi-arrow-right-circle me-1"></i> Ir a Productos
+                    </a>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card h-100 border text-center p-3 shadow-none">
+                    <i class="bi bi-boxes text-info fs-1 mb-2"></i>
+                    <h5 class="fw-bold mb-1">Control de Stock</h5>
+                    <p class="text-muted small mb-3">Existencias físicas, alertas de reposición y ajustes manuales</p>
+                    <a routerLink="/stock" class="btn btn-outline-info btn-sm mt-auto">
+                      <i class="bi bi-arrow-right-circle me-1"></i> Ir a Stock
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Módulos de Administración (Fase 3) -->
           <div class="card mb-4 border-success shadow-sm" *ngIf="authService.hasRole('Administrador')">
             <div class="card-header bg-success text-white">
               <i class="bi bi-grid-fill me-2"></i>
@@ -149,7 +182,7 @@ import { AuthService } from '../../core/services/auth.service';
             </div>
           </div>
 
-          <!-- 3. Estado de Infraestructura (Fase 0) -->
+          <!-- 4. Estado de Infraestructura (Fase 0) -->
           <div class="card mb-3">
             <div class="card-header d-flex justify-content-between align-items-center">
               <div>
