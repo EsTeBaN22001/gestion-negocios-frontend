@@ -4,6 +4,7 @@ export interface StockList {
   productoCodigo: string;
   productoNombre: string;
   productoPrecio: number;
+  productoActivo?: boolean;
   categoriaNombre: string;
   sucursalId: number;
   sucursalNombre: string;
@@ -18,6 +19,7 @@ export interface StockDetail {
   productoCodigo: string;
   productoNombre: string;
   productoPrecio: number;
+  productoActivo?: boolean;
   categoriaNombre: string;
   sucursalId: number;
   sucursalNombre: string;

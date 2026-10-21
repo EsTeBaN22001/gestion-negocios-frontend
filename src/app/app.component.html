@@ -22,6 +22,11 @@
           <i class="bi bi-boxes me-1"></i> Stock
         </a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/ventas" routerLinkActive="active">
+          <i class="bi bi-receipt-cutoff me-1"></i> Ventas
+        </a>
+      </li>
       <ng-container *ngIf="user.rol === 'Administrador'">
         <li class="nav-item">
           <a class="nav-link" routerLink="/sucursales" routerLinkActive="active">

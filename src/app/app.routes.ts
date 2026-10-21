@@ -6,6 +6,7 @@ import { CategoriasComponent } from './pages/categorias/categorias.component';
 import { UsuariosComponent } from './pages/usuarios/usuarios.component';
 import { ProductosComponent } from './pages/productos/productos.component';
 import { StockComponent } from './pages/stock/stock.component';
+import { VentasComponent } from './pages/ventas/ventas.component';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 
@@ -38,6 +39,11 @@ export const routes: Routes = [
   {
     path: 'stock',
     component: StockComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'ventas',
+    component: VentasComponent,
     canActivate: [authGuard]
   },
   { path: '**', redirectTo: '' }
