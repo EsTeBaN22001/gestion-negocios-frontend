@@ -135,4 +135,37 @@ describe('UsuarioService', () => {
     expect(req.request.method).toBe('PATCH');
     req.flush({ message: 'Estado modificado' });
   });
+
+  it('should upload avatar using FormData', () => {
+    const file = new File(['dummy'], 'avatar.png', { type: 'image/png' });
+    const mockDetail: UsuarioDetail = {
+      id: 2,
+      nombre: 'Carlos',
+      apellido: 'Gómez',
+      email: 'carlos@test.local',
+      rol: 'Empleado',
+      activo: true,
+      avatar: '/uploads/avatars/new.png',
+      fechaCreacion: '2026-01-01T00:00:00Z'
+    };
+
+    service.uploadAvatar(2, file).subscribe((res) => {
+      expect(res.avatar).toBe('/uploads/avatars/new.png');
+    });
+
+    const req = httpMock.expectOne(`${baseUrl}/2/avatar`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body instanceof FormData).toBeTrue();
+    req.flush(mockDetail);
+  });
+
+  it('should delete avatar', () => {
+    service.deleteAvatar(2).subscribe((res) => {
+      expect(res.message).toBe('Avatar eliminado');
+    });
+
+    const req = httpMock.expectOne(`${baseUrl}/2/avatar`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush({ message: 'Avatar eliminado' });
+  });
 });

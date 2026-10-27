@@ -77,7 +77,10 @@ import { VentaCreate, VentaDetail, VentaEstado, VentaList } from '../../core/mod
               <tr *ngIf="loading"><td colspan="8" class="text-center py-5"><span class="spinner-border spinner-border-sm me-2"></span>Cargando ventas...</td></tr>
               <tr *ngIf="!loading && ventas.length === 0"><td colspan="8" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No se encontraron ventas.</td></tr>
               <tr *ngFor="let venta of ventas">
-                <td class="fw-bold">#{{ venta.id }}</td>
+                <td class="fw-bold">
+                  #{{ venta.id }}
+                  <i *ngIf="venta.archivoAdjunto" class="bi bi-paperclip text-primary ms-1" title="Comprobante adjunto"></i>
+                </td>
                 <td>{{ venta.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
                 <td>{{ venta.sucursalNombre }}</td>
                 <td>{{ venta.usuarioNombre }}</td>
@@ -147,6 +150,13 @@ import { VentaCreate, VentaDetail, VentaEstado, VentaList } from '../../core/mod
               </div>
               <div class="d-flex justify-content-end fs-5" *ngIf="selectedProducts.length > 0">Total: <strong class="ms-2">\${{ getTotal() | number:'1.2-2' }}</strong></div>
               <div *ngIf="submitted && detalles.invalid" class="alert alert-danger mt-3 mb-0">Revisá que cada cantidad sea válida y no supere el stock disponible.</div>
+
+              <!-- Comprobante opcional al crear venta -->
+              <div class="mt-3 pt-3 border-top">
+                <label class="form-label small fw-semibold"><i class="bi bi-paperclip me-1"></i>Comprobante o factura adjunta (Opcional)</label>
+                <input type="file" class="form-control form-control-sm" accept=".pdf,image/jpeg,image/png" (change)="onComprobanteSelected($event)" />
+                <small class="text-muted d-block mt-1">Archivos PDF, JPG o PNG (máx. 5 MB)</small>
+              </div>
             </div>
             <div class="modal-footer"><button type="button" class="btn btn-secondary" (click)="closeCreateModal()">Cancelar</button><button type="submit" class="btn btn-primary" [disabled]="saving"><span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>Confirmar venta</button></div>
           </form>
@@ -158,6 +168,38 @@ import { VentaCreate, VentaDetail, VentaEstado, VentaList } from '../../core/mod
           <div class="modal-header"><h5 class="modal-title fw-bold">Detalle de venta <span *ngIf="selectedVenta">#{{ selectedVenta.id }}</span></h5><button type="button" class="btn-close" (click)="closeDetailModal()"></button></div>
           <div class="modal-body" *ngIf="selectedVenta"><div class="row mb-3 small"><div class="col-md-6"><strong>Sucursal:</strong> {{ selectedVenta.sucursalNombre }}<br><strong>Usuario:</strong> {{ selectedVenta.usuarioNombre }}</div><div class="col-md-6"><strong>Fecha:</strong> {{ selectedVenta.fecha | date:'dd/MM/yyyy HH:mm' }}<br><strong>Estado:</strong> <span class="badge" [ngClass]="selectedVenta.estado === 'Confirmada' ? 'bg-success' : 'bg-secondary'">{{ selectedVenta.estado }}</span></div></div>
             <table class="table"><thead><tr><th>Producto</th><th class="text-center">Cantidad</th><th class="text-end">Precio unitario</th><th class="text-end">Subtotal</th></tr></thead><tbody><tr *ngFor="let detail of selectedVenta.detalles"><td><strong>{{ detail.productoNombre }}</strong><small class="d-block text-muted">{{ detail.productoCodigo }}</small></td><td class="text-center">{{ detail.cantidad }}</td><td class="text-end">\${{ detail.precioUnitario | number:'1.2-2' }}</td><td class="text-end">\${{ detail.subtotal | number:'1.2-2' }}</td></tr></tbody><tfoot><tr><th colspan="3" class="text-end">Total</th><th class="text-end">\${{ selectedVenta.total | number:'1.2-2' }}</th></tr></tfoot></table>
+
+            <!-- Sección de Comprobante / Factura adjunta -->
+            <div class="mt-4 p-3 bg-light rounded border">
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                  <h6 class="mb-1 fw-bold"><i class="bi bi-paperclip me-1"></i>Comprobante o Factura adjunta</h6>
+                  <span *ngIf="selectedVenta.archivoAdjunto" class="badge bg-success">
+                    <i class="bi bi-check-circle me-1"></i>Comprobante disponible
+                  </span>
+                  <span *ngIf="!selectedVenta.archivoAdjunto" class="text-muted small">
+                    Esta venta no posee comprobante adjunto.
+                  </span>
+                </div>
+                <div *ngIf="selectedVenta.archivoAdjunto">
+                  <button type="button" class="btn btn-outline-primary btn-sm" (click)="descargarComprobante(selectedVenta.id)">
+                    <i class="bi bi-download me-1"></i>Ver / Descargar comprobante
+                  </button>
+                </div>
+              </div>
+
+              <!-- Adjuntar o reemplazar archivo si la venta está Confirmada -->
+              <div class="mt-3 pt-3 border-top" *ngIf="selectedVenta.estado === 'Confirmada'">
+                <label class="form-label small fw-semibold">{{ selectedVenta.archivoAdjunto ? 'Reemplazar comprobante' : 'Adjuntar comprobante ahora' }}:</label>
+                <div class="d-flex gap-2">
+                  <input type="file" class="form-control form-control-sm" accept=".pdf,image/jpeg,image/png" (change)="onDetailComprobanteSelected($event)" />
+                  <button type="button" class="btn btn-primary btn-sm text-nowrap" [disabled]="!detailComprobanteFile || uploadingComprobante" (click)="uploadDetailComprobante()">
+                    <span *ngIf="uploadingComprobante" class="spinner-border spinner-border-sm me-1"></span>
+                    <i *ngIf="!uploadingComprobante" class="bi bi-upload me-1"></i>Subir
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="modal-footer"><button class="btn btn-secondary" (click)="closeDetailModal()">Cerrar</button></div>
         </div></div>
@@ -200,6 +242,11 @@ export class VentasComponent implements OnInit, OnDestroy {
   showCancelModal = false;
   alertMessage: string | null = null;
   alertType: 'success' | 'danger' = 'success';
+
+  // Manejo de Comprobante / Archivo adjunto
+  selectedComprobanteFile: File | null = null;
+  detailComprobanteFile: File | null = null;
+  uploadingComprobante = false;
 
   ventaForm: FormGroup;
   private readonly searchSubject = new Subject<string>();
@@ -306,6 +353,7 @@ export class VentasComponent implements OnInit, OnDestroy {
     this.productResults = [];
     this.productSearchTerm = '';
     this.selectedProducts = [];
+    this.selectedComprobanteFile = null;
     this.detalles.clear();
     this.ventaForm.reset({ sucursalId: this.isAdmin ? null : this.userSucursalId });
     if (this.isAdmin) {
@@ -319,6 +367,87 @@ export class VentasComponent implements OnInit, OnDestroy {
 
   closeCreateModal(): void {
     this.showCreateModal = false;
+    this.selectedComprobanteFile = null;
+  }
+
+  onComprobanteSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      const validTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+      if (!validTypes.includes(file.type)) {
+        this.showAlert('Formato no permitido. Solo se aceptan archivos PDF, JPG y PNG.', 'danger');
+        input.value = '';
+        this.selectedComprobanteFile = null;
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        this.showAlert('El comprobante no debe superar los 5 MB.', 'danger');
+        input.value = '';
+        this.selectedComprobanteFile = null;
+        return;
+      }
+      this.selectedComprobanteFile = file;
+    }
+  }
+
+  onDetailComprobanteSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      const validTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+      if (!validTypes.includes(file.type)) {
+        this.showAlert('Formato no permitido. Solo se aceptan archivos PDF, JPG y PNG.', 'danger');
+        input.value = '';
+        this.detailComprobanteFile = null;
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        this.showAlert('El comprobante no debe superar los 5 MB.', 'danger');
+        input.value = '';
+        this.detailComprobanteFile = null;
+        return;
+      }
+      this.detailComprobanteFile = file;
+    }
+  }
+
+  uploadDetailComprobante(): void {
+    if (!this.selectedVenta || !this.detailComprobanteFile) return;
+
+    this.uploadingComprobante = true;
+    this.ventaService.adjuntarArchivo(this.selectedVenta.id, this.detailComprobanteFile).subscribe({
+      next: updatedSale => {
+        this.uploadingComprobante = false;
+        this.detailComprobanteFile = null;
+        this.selectedVenta = updatedSale;
+        this.showAlert(`Comprobante adjuntado con éxito a la venta #${updatedSale.id}.`, 'success');
+        this.loadVentas();
+      },
+      error: error => {
+        this.uploadingComprobante = false;
+        this.showAlert(error.error?.detail || 'No se pudo adjuntar el comprobante.', 'danger');
+      }
+    });
+  }
+
+  descargarComprobante(ventaId: number): void {
+    this.ventaService.descargarAdjunto(ventaId).subscribe({
+      next: blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `comprobante_venta_${ventaId}`;
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: error => {
+        this.showAlert(error.error?.detail || 'No se pudo descargar el archivo del comprobante.', 'danger');
+      }
+    });
   }
 
   onVentaSucursalChange(): void {
@@ -400,10 +529,27 @@ export class VentasComponent implements OnInit, OnDestroy {
 
     this.ventaService.create(dto).subscribe({
       next: sale => {
-        this.saving = false;
-        this.closeCreateModal();
-        this.showAlert(`Venta #${sale.id} registrada correctamente.`, 'success');
-        this.loadVentas();
+        if (this.selectedComprobanteFile) {
+          this.ventaService.adjuntarArchivo(sale.id, this.selectedComprobanteFile).subscribe({
+            next: () => {
+              this.saving = false;
+              this.closeCreateModal();
+              this.showAlert(`Venta #${sale.id} registrada con comprobante adjunto.`, 'success');
+              this.loadVentas();
+            },
+            error: () => {
+              this.saving = false;
+              this.closeCreateModal();
+              this.showAlert(`Venta #${sale.id} registrada, pero hubo un error al adjuntar el comprobante.`, 'danger');
+              this.loadVentas();
+            }
+          });
+        } else {
+          this.saving = false;
+          this.closeCreateModal();
+          this.showAlert(`Venta #${sale.id} registrada correctamente.`, 'success');
+          this.loadVentas();
+        }
       },
       error: error => {
         this.saving = false;
@@ -416,6 +562,8 @@ export class VentasComponent implements OnInit, OnDestroy {
     this.ventaService.getById(id).subscribe({
       next: sale => {
         this.selectedVenta = sale;
+        this.detailComprobanteFile = null;
+        this.uploadingComprobante = false;
         this.showDetailModal = true;
       },
       error: error => this.showAlert(error.error?.detail || 'No se pudo obtener el detalle de la venta.', 'danger')
@@ -425,6 +573,8 @@ export class VentasComponent implements OnInit, OnDestroy {
   closeDetailModal(): void {
     this.showDetailModal = false;
     this.selectedVenta = null;
+    this.detailComprobanteFile = null;
+    this.uploadingComprobante = false;
   }
 
   openCancelModal(sale: VentaList): void {

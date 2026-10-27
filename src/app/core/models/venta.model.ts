@@ -20,6 +20,7 @@ export interface VentaList {
   usuarioId: number;
   usuarioNombre: string;
   detallesCount: number;
+  archivoAdjunto?: string | null;
 }
 
 export interface VentaDetalle {
@@ -40,5 +41,6 @@ export interface VentaDetail {
   sucursalNombre: string;
   usuarioId: number;
   usuarioNombre: string;
+  archivoAdjunto?: string | null;
   detalles: VentaDetalle[];
 }

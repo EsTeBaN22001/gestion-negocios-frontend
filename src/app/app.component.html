@@ -50,7 +50,24 @@
       <!-- Usuario Autenticado -->
       <ng-container *ngIf="authService.currentUser$ | async as user; else anonTemplate">
         <div class="text-light me-3 d-flex align-items-center">
-          <i class="bi bi-person-circle fs-5 me-2"></i>
+          <!-- Thumbnail de Avatar o Icono por defecto con tooltip -->
+          <button
+            type="button"
+            class="btn p-0 border-0 me-2 d-flex align-items-center"
+            (click)="openProfileModal()"
+            title="Cambiar mi foto de perfil"
+          >
+            <img
+              *ngIf="user.avatar; else defaultUserIcon"
+              [src]="getAvatarUrl(user.avatar)"
+              alt="Avatar"
+              class="rounded-circle border border-2 border-primary shadow-sm"
+              style="width: 36px; height: 36px; object-fit: cover;"
+            />
+            <ng-template #defaultUserIcon>
+              <i class="bi bi-person-circle fs-4 text-light"></i>
+            </ng-template>
+          </button>
           <div>
             <span class="fw-semibold">{{ user.nombre }} {{ user.apellido }}</span>
             <span
@@ -82,3 +99,80 @@
 <main class="container-fluid p-0">
   <router-outlet></router-outlet>
 </main>
+
+<!-- Modal de Perfil / Cambio de Avatar del Usuario Actual -->
+<div class="modal fade show d-block" tabindex="-1" role="dialog" *ngIf="showProfileModal" style="background-color: rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title"><i class="bi bi-person-bounding-box me-2"></i>Foto de perfil</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeProfileModal()"></button>
+      </div>
+      <div class="modal-body text-center p-4" *ngIf="authService.currentUser$ | async as user">
+        <!-- Notificaciones de éxito o error -->
+        <div *ngIf="profileSuccess" class="alert alert-success py-2 small mb-3">
+          <i class="bi bi-check-circle me-1"></i>{{ profileSuccess }}
+        </div>
+        <div *ngIf="profileError" class="alert alert-danger py-2 small mb-3">
+          <i class="bi bi-exclamation-triangle me-1"></i>{{ profileError }}
+        </div>
+
+        <!-- Visualización actual o vista previa -->
+        <div class="mb-3">
+          <img
+            *ngIf="avatarPreviewUrl || user.avatar; else noAvatarView"
+            [src]="avatarPreviewUrl || getAvatarUrl(user.avatar)"
+            alt="Vista previa"
+            class="rounded-circle border border-3 border-primary shadow mb-2"
+            style="width: 120px; height: 120px; object-fit: cover;"
+          />
+          <ng-template #noAvatarView>
+            <div class="d-inline-flex justify-content-center align-items-center rounded-circle bg-light border border-2 text-muted mb-2 shadow-sm" style="width: 120px; height: 120px;">
+              <i class="bi bi-person fs-1"></i>
+            </div>
+          </ng-template>
+          <div class="fw-bold">{{ user.nombre }} {{ user.apellido }}</div>
+          <small class="text-muted d-block">{{ user.email }} • {{ user.rol }}</small>
+        </div>
+
+        <!-- Input para seleccionar archivo -->
+        <div class="mb-3 text-start">
+          <label class="form-label small fw-semibold">Seleccionar nueva foto (JPG, PNG, WEBP, máx. 2 MB)</label>
+          <input
+            type="file"
+            class="form-control form-control-sm"
+            accept="image/jpeg,image/png,image/webp"
+            (change)="onAvatarFileSelected($event)"
+          />
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="d-flex justify-content-between align-items-center mt-4">
+          <button
+            *ngIf="user.avatar"
+            type="button"
+            class="btn btn-outline-danger btn-sm"
+            (click)="removeAvatar()"
+            [disabled]="profileLoading"
+          >
+            <i class="bi bi-trash me-1"></i> Quitar foto
+          </button>
+          <span *ngIf="!user.avatar"></span>
+
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="closeProfileModal()">Cerrar</button>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              (click)="saveAvatar()"
+              [disabled]="!selectedAvatarFile || profileLoading"
+            >
+              <span *ngIf="profileLoading" class="spinner-border spinner-border-sm me-1"></span>
+              <i *ngIf="!profileLoading" class="bi bi-upload me-1"></i> Guardar foto
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

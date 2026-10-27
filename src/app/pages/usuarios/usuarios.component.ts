@@ -8,6 +8,7 @@ import { SucursalService } from '../../core/services/sucursal.service';
 import { AuthService } from '../../core/services/auth.service';
 import { UsuarioList, UsuarioDetail, UsuarioCreate, UsuarioUpdate } from '../../core/models/user.model';
 import { Sucursal } from '../../core/models/sucursal.model';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-usuarios',
@@ -117,9 +118,18 @@ import { Sucursal } from '../../core/models/sucursal.model';
                 <td class="fw-semibold text-muted">#{{ u.id }}</td>
                 <td>
                   <div class="d-flex align-items-center">
-                    <div class="avatar-circle me-2 bg-light text-primary fw-bold border">
-                      {{ u.nombre.charAt(0) }}{{ u.apellido.charAt(0) }}
-                    </div>
+                    <img
+                      *ngIf="u.avatar; else initialsTpl"
+                      [src]="getAvatarUrl(u.avatar)"
+                      alt="Avatar"
+                      class="rounded-circle me-2 border shadow-sm"
+                      style="width: 36px; height: 36px; object-fit: cover;"
+                    />
+                    <ng-template #initialsTpl>
+                      <div class="avatar-circle me-2 bg-light text-primary fw-bold border">
+                        {{ u.nombre.charAt(0) }}{{ u.apellido.charAt(0) }}
+                      </div>
+                    </ng-template>
                     <div>
                       <div class="fw-bold">{{ u.nombre }} {{ u.apellido }}</div>
                       <small class="text-muted" *ngIf="currentUserId === u.id">(Tu usuario)</small>
@@ -310,6 +320,43 @@ import { Sucursal } from '../../core/models/sucursal.model';
                     </div>
                   </div>
 
+                  <!-- Foto de Perfil (Avatar) -->
+                  <div class="col-12">
+                    <label class="form-label fw-semibold">Foto de Perfil (Avatar)</label>
+                    <div class="d-flex align-items-center gap-3">
+                      <img
+                        *ngIf="avatarPreviewUrl || editingUserAvatar; else noModalAvatar"
+                        [src]="avatarPreviewUrl || getAvatarUrl(editingUserAvatar)"
+                        alt="Preview"
+                        class="rounded-circle border border-2 border-primary shadow-sm"
+                        style="width: 50px; height: 50px; object-fit: cover;"
+                      />
+                      <ng-template #noModalAvatar>
+                        <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center text-muted" style="width: 50px; height: 50px;">
+                          <i class="bi bi-person fs-4"></i>
+                        </div>
+                      </ng-template>
+                      <div class="flex-grow-1">
+                        <input
+                          type="file"
+                          class="form-control form-control-sm"
+                          accept="image/jpeg,image/png,image/webp"
+                          (change)="onModalAvatarSelected($event)"
+                        />
+                        <small class="text-muted d-block mt-1">Formatos permitidos: JPG, PNG, WEBP (máx. 2 MB)</small>
+                      </div>
+                      <button
+                        *ngIf="isEditing && (editingUserAvatar || selectedAvatarFile)"
+                        type="button"
+                        class="btn btn-outline-danger btn-sm"
+                        (click)="removeModalAvatar()"
+                        title="Quitar foto actual"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+
                   <!-- Estado Activo (solo en edición) -->
                   <div class="col-12" *ngIf="isEditing">
                     <div class="form-check form-switch mt-2">
@@ -420,6 +467,12 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   // Modal Confirmación Toggle
   showConfirmModal = false;
   userToToggle: UsuarioList | null = null;
+
+  // Manejo de Avatar
+  selectedAvatarFile: File | null = null;
+  avatarPreviewUrl: string | null = null;
+  editingUserAvatar: string | null = null;
+  shouldDeleteAvatar = false;
 
   // Notificaciones
   alertMessage: string | null = null;
@@ -563,10 +616,52 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     sucursalControl?.updateValueAndValidity();
   }
 
+  getAvatarUrl(avatar: string | null | undefined): string | null {
+    if (!avatar) return null;
+    if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar;
+    return `${environment.apiBaseUrl}${avatar.startsWith('/') ? '' : '/'}${avatar}`;
+  }
+
+  onModalAvatarSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        this.showAlert('Formato de imagen inválido. Solo se admiten JPG, PNG y WEBP.', 'danger');
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        this.showAlert('La imagen excede el límite máximo de 2 MB.', 'danger');
+        return;
+      }
+
+      this.selectedAvatarFile = file;
+      this.shouldDeleteAvatar = false;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.avatarPreviewUrl = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeModalAvatar(): void {
+    this.selectedAvatarFile = null;
+    this.avatarPreviewUrl = null;
+    this.editingUserAvatar = null;
+    this.shouldDeleteAvatar = true;
+  }
+
   openCreateModal(): void {
     this.isEditing = false;
     this.editingId = null;
     this.submitted = false;
+    this.selectedAvatarFile = null;
+    this.avatarPreviewUrl = null;
+    this.editingUserAvatar = null;
+    this.shouldDeleteAvatar = false;
 
     this.userForm.reset({
       nombre: '',
@@ -589,6 +684,10 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.isEditing = true;
     this.editingId = usuario.id;
     this.submitted = false;
+    this.selectedAvatarFile = null;
+    this.avatarPreviewUrl = null;
+    this.editingUserAvatar = usuario.avatar || null;
+    this.shouldDeleteAvatar = false;
 
     this.userForm.patchValue({
       nombre: usuario.nombre,
@@ -610,6 +709,10 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   closeModal(): void {
     this.showModal = false;
     this.submitted = false;
+    this.selectedAvatarFile = null;
+    this.avatarPreviewUrl = null;
+    this.editingUserAvatar = null;
+    this.shouldDeleteAvatar = false;
     this.userForm.reset();
   }
 
@@ -635,11 +738,21 @@ export class UsuariosComponent implements OnInit, OnDestroy {
       };
 
       this.usuarioService.update(this.editingId, updateDto).subscribe({
-        next: () => {
-          this.saving = false;
-          this.closeModal();
-          this.showAlert('Usuario actualizado con éxito.', 'success');
-          this.loadUsuarios();
+        next: (updatedUser) => {
+          // Procesar avatar si corresponde
+          if (this.shouldDeleteAvatar) {
+            this.usuarioService.deleteAvatar(this.editingId!).subscribe({
+              next: () => this.finalizeSave('Usuario actualizado con éxito.'),
+              error: () => this.finalizeSave('Usuario actualizado, pero hubo un error al eliminar el avatar.')
+            });
+          } else if (this.selectedAvatarFile) {
+            this.usuarioService.uploadAvatar(this.editingId!, this.selectedAvatarFile).subscribe({
+              next: () => this.finalizeSave('Usuario y foto de perfil actualizados con éxito.'),
+              error: () => this.finalizeSave('Usuario actualizado, pero hubo un error al subir el avatar.')
+            });
+          } else {
+            this.finalizeSave('Usuario actualizado con éxito.');
+          }
         },
         error: (err) => {
           this.saving = false;
@@ -658,11 +771,15 @@ export class UsuariosComponent implements OnInit, OnDestroy {
       };
 
       this.usuarioService.create(createDto).subscribe({
-        next: () => {
-          this.saving = false;
-          this.closeModal();
-          this.showAlert('Usuario creado con éxito.', 'success');
-          this.loadUsuarios();
+        next: (newUser) => {
+          if (this.selectedAvatarFile) {
+            this.usuarioService.uploadAvatar(newUser.id, this.selectedAvatarFile).subscribe({
+              next: () => this.finalizeSave('Usuario creado y foto de perfil asignada con éxito.'),
+              error: () => this.finalizeSave('Usuario creado, pero hubo un error al subir el avatar.')
+            });
+          } else {
+            this.finalizeSave('Usuario creado con éxito.');
+          }
         },
         error: (err) => {
           this.saving = false;
@@ -671,6 +788,13 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  private finalizeSave(message: string): void {
+    this.saving = false;
+    this.closeModal();
+    this.showAlert(message, 'success');
+    this.loadUsuarios();
   }
 
   confirmToggle(usuario: UsuarioList): void {

@@ -40,4 +40,27 @@ describe('VentaService', () => {
     expect(request.request.body).toEqual({ detalles: [{ productoId: 4, cantidad: 2 }] });
     request.flush({ id: 1, detalles: [] });
   });
+
+  it('should upload sale attachment with FormData', () => {
+    const file = new File(['ticket-bytes'], 'ticket.pdf', { type: 'application/pdf' });
+    service.adjuntarArchivo(10, file).subscribe(res => {
+      expect(res.archivoAdjunto).toBe('/uploads/ventas/ticket.pdf');
+    });
+
+    const request = httpMock.expectOne(`${environment.apiBaseUrl}/api/ventas/10/adjunto`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body instanceof FormData).toBeTrue();
+    request.flush({ id: 10, archivoAdjunto: '/uploads/ventas/ticket.pdf', detalles: [] });
+  });
+
+  it('should download sale attachment as blob', () => {
+    service.descargarAdjunto(10).subscribe(blob => {
+      expect(blob).toBeTruthy();
+    });
+
+    const request = httpMock.expectOne(`${environment.apiBaseUrl}/api/ventas/10/adjunto`);
+    expect(request.request.method).toBe('GET');
+    expect(request.request.responseType).toBe('blob');
+    request.flush(new Blob(['pdf content']));
+  });
 });

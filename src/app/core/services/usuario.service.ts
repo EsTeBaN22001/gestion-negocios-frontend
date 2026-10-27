@@ -59,4 +59,14 @@ export class UsuarioService {
   toggleActivo(id: number): Observable<{ message: string }> {
     return this.http.patch<{ message: string }>(`${this.baseUrl}/${id}/toggle-activo`, {});
   }
+
+  uploadAvatar(id: number, file: File): Observable<UsuarioDetail> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<UsuarioDetail>(`${this.baseUrl}/${id}/avatar`, formData);
+  }
+
+  deleteAvatar(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.baseUrl}/${id}/avatar`);
+  }
 }

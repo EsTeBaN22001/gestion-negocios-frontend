@@ -104,6 +104,36 @@ export class AuthService {
   }
 
   /**
+   * Sube o actualiza el avatar del usuario autenticado y refresca el estado en localStorage y currentUser$.
+   */
+  uploadMyAvatar(file: File): Observable<User> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<User>(`${this.baseUrl}/api/auth/perfil/avatar`, formData).pipe(
+      tap((user) => {
+        if (user) {
+          localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+          this.currentUserSubject.next(user);
+        }
+      })
+    );
+  }
+
+  /**
+   * Elimina el avatar del usuario autenticado y refresca el estado en localStorage y currentUser$.
+   */
+  deleteMyAvatar(): Observable<User> {
+    return this.http.delete<User>(`${this.baseUrl}/api/auth/perfil/avatar`).pipe(
+      tap((user) => {
+        if (user) {
+          localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+          this.currentUserSubject.next(user);
+        }
+      })
+    );
+  }
+
+  /**
    * Valida si el token existe y si la fecha de expiración aún es válida.
    */
   private isTokenValid(): boolean {

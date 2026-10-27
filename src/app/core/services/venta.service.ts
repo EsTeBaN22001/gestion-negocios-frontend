@@ -50,4 +50,18 @@ export class VentaService {
   anular(id: number): Observable<VentaDetail> {
     return this.http.post<VentaDetail>(`${this.baseUrl}/${id}/anular`, {});
   }
+
+  adjuntarArchivo(ventaId: number, file: File): Observable<VentaDetail> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<VentaDetail>(`${this.baseUrl}/${ventaId}/adjunto`, formData);
+  }
+
+  getAdjuntoUrl(ventaId: number): string {
+    return `${this.baseUrl}/${ventaId}/adjunto`;
+  }
+
+  descargarAdjunto(ventaId: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${ventaId}/adjunto`, { responseType: 'blob' });
+  }
 }
